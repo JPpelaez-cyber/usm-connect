@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USM Connect - Chat</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <div class="navbar">
+    <div class="brand"><span class="dot"></span><span class="brand-text">USM Connect</span></div>
+    <nav>
+      <a href="/discover.html" class="navlink">Discover</a>
+      <a href="/matches.html" class="navlink">Matches</a>
+      <a href="/friends.html" class="navlink">Friends</a>
+      <a href="/messages.html" class="navlink active">Messages</a>
+      <a href="/profile.html" class="navlink">Profile</a>
+      <a href="#" class="navlink" id="logoutLink">Log Out</a>
+    </nav>
+  </div>
+
+  <div class="main" style="max-width:600px;">
+    <div class="panel chat-shell">
+      <div class="chat-header">
+        <button class="back-btn" id="backBtn" title="Back to Messages">←</button>
+        <div class="who-avatar" id="whoAvatar"></div>
+        <div>
+          <h2 id="whoName">Loading...</h2>
+          <div class="meta" id="whoMeta"></div>
+        </div>
+      </div>
+      <div class="chat-messages" id="messages"></div>
+      <div id="deniedNotice" class="alert alert-error hidden">
+        You can only message people you've matched with or added as a friend.
+      </div>
+      <form class="chat-input-row" id="sendForm">
+        <input type="text" id="messageInput" placeholder="Type a message..." maxlength="1000" autocomplete="off">
+        <button type="submit" class="btn btn-primary">Send</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/chat.js"></script>
+</body>
+</html>

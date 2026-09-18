@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USM Connect - My Profile</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <div class="navbar">
+    <div class="brand"><span class="dot"></span><span class="brand-text">USM Connect</span></div>
+    <nav>
+      <a href="/discover.html" class="navlink">Discover</a>
+      <a href="/matches.html" class="navlink">Matches</a>
+      <a href="/friends.html" class="navlink">Friends</a>
+      <a href="/messages.html" class="navlink">Messages</a>
+      <a href="/profile.html" class="navlink active">Profile</a>
+      <a href="#" class="navlink" id="logoutLink">Log Out</a>
+    </nav>
+  </div>
+
+  <div class="main" style="max-width:520px;">
+    <div class="panel" id="profileCard"><div class="loader"></div></div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  document.getElementById("logoutLink").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await Api.post("/api/logout");
+    window.location.href = "/index.html";
+  });
+
+  function chipRow(items) {
+    if (!items || items.length === 0) return `<p class="helper-text">None selected yet.</p>`;
+    return `<div class="tag-row">${items.map((i) => `<span class="tag">${escapeHtml(i)}</span>`).join("")}</div>`;
+  }
+
+  async function init() {
+    const user = await requireAuth();
+    if (!user) return;
+
+    const card = document.getElementById("profileCard");
+    card.innerHTML = `
+      <div class="center">
+        <div class="photo-upload" style="cursor:default;">
+          ${user.photoPath
+            ? `<img src="${escapeHtml(user.photoPath)}">`
+            : `<span class="placeholder" style="font-size:2.5rem;">${escapeHtml(initial(user.fullName))}</span>`}
+        </div>
+        <h1 style="margin:0;">${escapeHtml(user.fullName)}</h1>
+        <p class="helper-text">@${escapeHtml(user.username)}</p>
+      </div>
+
+      <div class="section-title">University Info</div>
+      <p>${escapeHtml(user.course || "No course set")} — ${escapeHtml(user.yearLevel || "No year level set")}</p>
+      <p class="helper-text">${escapeHtml(user.college || "")}</p>
+
+      <div class="section-title">Bio</div>
+      <p>${user.bio ? escapeHtml(user.bio) : '<span class="helper-text">No bio yet.</span>'}</p>
+
+      <div class="section-title">Hobbies</div>
+      ${chipRow(user.hobbies)}
+
+      <div class="section-title">Games</div>
+      ${chipRow(user.games)}
+
+      <div class="section-title">Favorite Filipino Foods</div>
+      ${chipRow(user.foods)}
+
+      <div class="spacer"></div>
+      <a href="/setup.html" class="btn btn-primary btn-block">Edit Profile</a>
+    `;
+  }
+
+  init();
+</script>
+</body>
+</html>

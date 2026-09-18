@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USM Connect - Log In</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <div class="centered-page">
+    <div class="panel auth-card">
+      <h1>🎓 USM Connect</h1>
+      <p class="subtitle">Meet fellow Kutabatanons at University of Southern Mindanao</p>
+
+      <div id="alertBox"></div>
+
+      <form id="loginForm">
+        <div class="field">
+          <label>Username or Email</label>
+          <input type="text" id="username" placeholder="e.g. jhon.pelaez" required autocomplete="username">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Log In</button>
+      </form>
+
+      <p class="center link-muted" style="margin-top:18px;">
+        New to USM Connect? <a href="/register.html" class="link-neon">Create an account</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  (async function redirectIfLoggedIn() {
+    const user = await Api.me();
+    if (user) {
+      window.location.href = user.profileComplete ? "/discover.html" : "/setup.html";
+    }
+  })();
+
+  const form = document.getElementById("loginForm");
+  const alertBox = document.getElementById("alertBox");
+  const loginBtn = document.getElementById("loginBtn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    alertBox.innerHTML = "";
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Logging in...";
+    try {
+      const user = await Api.post("/api/login", {
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value,
+      });
+      window.location.href = user.profileComplete ? "/discover.html" : "/setup.html";
+    } catch (err) {
+      alertBox.innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Log In";
+    }
+  });
+</script>
+</body>
+</html>

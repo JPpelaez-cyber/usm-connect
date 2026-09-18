@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USM Connect - Set Up Your Profile</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <div class="main" style="max-width:640px;">
+    <div class="panel">
+      <div class="steps">
+        <div class="step-dot" data-step="1"></div>
+        <div class="step-dot" data-step="2"></div>
+        <div class="step-dot" data-step="3"></div>
+        <div class="step-dot" data-step="4"></div>
+        <div class="step-dot" data-step="5"></div>
+      </div>
+
+      <div id="alertBox"></div>
+
+      <!-- STEP 1: Photo + Bio -->
+      <section class="step" data-step="1">
+        <h2>Add your photo</h2>
+        <p class="helper-text">A real photo of you helps other USM students recognize you around campus.</p>
+        <label class="photo-upload" id="photoUpload">
+          <span class="placeholder" id="photoPlaceholder">📷<br>Tap to upload</span>
+          <img id="photoPreview" class="hidden">
+          <input type="file" id="photoInput" accept="image/png, image/jpeg, image/webp, image/gif">
+        </label>
+        <div class="field">
+          <label>Short bio</label>
+          <textarea id="bio" maxlength="300" placeholder="Tell fellow Kutabatanons a bit about yourself..."></textarea>
+        </div>
+      </section>
+
+      <!-- STEP 2: College + Course + Year Level -->
+      <section class="step hidden" data-step="2">
+        <h2>Where at USM?</h2>
+        <p class="helper-text">Your college, course, and year level at the University of Southern Mindanao.</p>
+        <div class="field">
+          <label>College</label>
+          <select id="collegeSelect"></select>
+        </div>
+        <div class="field">
+          <label>Course / Program</label>
+          <select id="courseSelect"></select>
+        </div>
+        <div class="field">
+          <label>Year Level / Status</label>
+          <select id="yearSelect"></select>
+        </div>
+      </section>
+
+      <!-- STEP 3: Hobbies -->
+      <section class="step hidden" data-step="3">
+        <h2>What are your hobbies?</h2>
+        <p class="helper-text">Pick as many as apply — shared hobbies boost your compatibility score.</p>
+        <div class="chip-grid" id="hobbiesGrid"></div>
+      </section>
+
+      <!-- STEP 4: Games -->
+      <section class="step hidden" data-step="4">
+        <h2>What do you play?</h2>
+        <p class="helper-text">Favorite games, sports, or things you'd play together.</p>
+        <div class="chip-grid" id="gamesGrid"></div>
+      </section>
+
+      <!-- STEP 5: Filipino Foods -->
+      <section class="step hidden" data-step="5">
+        <h2>Paborito mo bang pagkain? 🍽️</h2>
+        <p class="helper-text">Pick your favorite Filipino dishes.</p>
+        <div class="food-grid" id="foodsGrid"></div>
+      </section>
+
+      <div class="spacer"></div>
+      <div class="flex-between">
+        <button class="btn btn-outline" id="backBtn">Back</button>
+        <button class="btn btn-primary" id="nextBtn">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/setup.js"></script>
+</body>
+</html>

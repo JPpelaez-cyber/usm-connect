@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USM Connect - Admin</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  textarea.json-editor { min-height: 260px; font-family: 'Courier New', monospace; font-size: 0.82rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  th { color: var(--text-dim); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="navbar">
+    <div class="brand"><span class="dot"></span><span class="brand-text">USM Connect Admin</span></div>
+  </div>
+
+  <div class="main">
+
+    <div class="panel" id="keyGate">
+      <h2>Admin Access</h2>
+      <p class="helper-text">Enter the admin key (ADMIN_KEY env var on the server; default is <code>usm-admin-2024</code>).</p>
+      <div class="field">
+        <input type="password" id="adminKey" placeholder="Admin key">
+      </div>
+      <button class="btn btn-primary" id="unlockBtn">Unlock</button>
+      <div id="keyAlert"></div>
+    </div>
+
+    <div id="adminPanels" class="hidden">
+      <div class="panel">
+        <div class="flex-between">
+          <h2 style="margin:0;">Users</h2>
+          <span class="helper-text" id="userCount"></span>
+        </div>
+        <div style="overflow-x:auto; margin-top:14px;">
+          <table id="usersTable">
+            <thead><tr><th>Name</th><th>Username</th><th>Course</th><th>Year</th><th>Status</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="panel">
+        <h2 style="margin-top:0;">Reports</h2>
+        <div style="overflow-x:auto;">
+          <table id="reportsTable">
+            <thead><tr><th>Reporter</th><th>Reported</th><th>Reason</th><th>When</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="panel">
+        <h2 style="margin-top:0;">Selectable Options</h2>
+        <p class="helper-text">
+          Edit courses, year levels, hobbies, games, and Filipino foods as raw JSON.
+          No code changes or server restart required — this is the config USM Connect
+          reads on every page load.
+        </p>
+        <textarea id="optionsEditor" class="json-editor"></textarea>
+        <div class="spacer"></div>
+        <button class="btn btn-primary" id="saveOptionsBtn">Save Options</button>
+        <span id="optionsStatus" class="helper-text"></span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let adminKey = "";
+
+  async function adminFetch(path, opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({ "X-Admin-Key": adminKey }, opts.headers || {});
+    const res = await fetch(path, opts);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Request failed");
+    return data;
+  }
+
+  document.getElementById("unlockBtn").addEventListener("click", async () => {
+    adminKey = document.getElementById("adminKey").value;
+    try {
+      await loadUsers();
+      await loadReports();
+      await loadOptions();
+      document.getElementById("keyGate").classList.add("hidden");
+      document.getElementById("adminPanels").classList.remove("hidden");
+    } catch (err) {
+      document.getElementById("keyAlert").innerHTML =
+        `<div class="alert alert-error">${err.message}</div>`;
+    }
+  });
+
+  async function loadUsers() {
+    const users = await adminFetch("/api/admin/users");
+    document.getElementById("userCount").textContent = users.length + " total";
+    const tbody = document.querySelector("#usersTable tbody");
+    tbody.innerHTML = users.map((u) => `
+      <tr>
+        <td>${u.fullName}</td>
+        <td>${u.username}</td>
+        <td>${u.course || "-"}</td>
+        <td>${u.yearLevel || "-"}</td>
+        <td>${u.blocked ? "🚫 Blocked" : "✅ Active"}</td>
+        <td><button class="btn btn-sm ${u.blocked ? "btn-outline" : "btn-danger"}" data-id="${u.id}" data-blocked="${!!u.blocked}">
+          ${u.blocked ? "Unblock" : "Block"}
+        </button></td>
+      </tr>
+    `).join("");
+    tbody.querySelectorAll("button[data-id]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const willBlock = btn.dataset.blocked !== "true";
+        await adminFetch("/api/admin/users/block", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: btn.dataset.id, blocked: willBlock }),
+        });
+        loadUsers();
+      });
+    });
+  }
+
+  async function loadReports() {
+    const reports = await adminFetch("/api/admin/reports");
+    const tbody = document.querySelector("#reportsTable tbody");
+    if (reports.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" class="helper-text">No reports filed.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = reports.map((r) => `
+      <tr>
+        <td>${r.reporter}</td>
+        <td>${r.reported}</td>
+        <td>${r.reason}</td>
+        <td>${new Date(r.createdAt).toLocaleString()}</td>
+      </tr>
+    `).join("");
+  }
+
+  async function loadOptions() {
+    const options = await adminFetch("/api/admin/options");
+    document.getElementById("optionsEditor").value = JSON.stringify(options, null, 2);
+  }
+
+  document.getElementById("saveOptionsBtn").addEventListener("click", async () => {
+    const statusEl = document.getElementById("optionsStatus");
+    try {
+      const parsed = JSON.parse(document.getElementById("optionsEditor").value);
+      await adminFetch("/api/admin/options", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed),
+      });
+      statusEl.textContent = "Saved ✓";
+      statusEl.style.color = "var(--neon)";
+    } catch (err) {
+      statusEl.textContent = "Error: " + err.message;
+      statusEl.style.color = "var(--danger)";
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USM Connect - Discover</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <div class="navbar">
+    <div class="brand"><span class="dot"></span><span class="brand-text">USM Connect</span></div>
+    <nav>
+      <a href="/discover.html" class="navlink active">Discover</a>
+      <a href="/matches.html" class="navlink">Matches</a>
+      <a href="/friends.html" class="navlink">Friends</a>
+      <a href="/messages.html" class="navlink">Messages</a>
+      <a href="/profile.html" class="navlink">Profile</a>
+      <a href="#" class="navlink" id="logoutLink">Log Out</a>
+    </nav>
+  </div>
+
+  <div class="main">
+    <div class="swipe-stage" id="stage">
+      <div class="loader"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Match celebration modal -->
+<div class="modal-overlay hidden" id="matchModal">
+  <div class="panel match-modal">
+    <h1>It's a Match! 🎉</h1>
+    <div class="avatars">
+      <div class="av" id="avSelf"></div>
+      <div class="av" id="avOther"></div>
+    </div>
+    <p id="matchText" class="helper-text"></p>
+    <div class="flex-between" style="gap:10px;">
+      <button class="btn btn-outline btn-block" id="keepSwiping">Keep Discovering</button>
+      <button class="btn btn-primary btn-block" id="goToMatches">See Matches</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/discover.js"></script>
+</body>
+</html>

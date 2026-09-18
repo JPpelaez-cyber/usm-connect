@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USM Connect - Sign Up</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <div class="centered-page">
+    <div class="panel auth-card">
+      <h1>Create your account</h1>
+      <p class="subtitle">Step 1 of 2 — basic info. Next you'll set up your profile.</p>
+
+      <div id="alertBox"></div>
+
+      <form id="registerForm">
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" id="fullName" placeholder="e.g. Jhon Paul Pelaez" required>
+        </div>
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="username" placeholder="e.g. jhon.pelaez" required autocomplete="username">
+        </div>
+        <div class="field">
+          <label>USM Email or Personal Email</label>
+          <input type="email" id="email" placeholder="you@example.com" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="At least 6 characters" required
+                 autocomplete="new-password" minlength="6">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Continue</button>
+      </form>
+
+      <p class="center link-muted" style="margin-top:18px;">
+        Already have an account? <a href="/index.html" class="link-neon">Log in</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const form = document.getElementById("registerForm");
+  const alertBox = document.getElementById("alertBox");
+  const submitBtn = document.getElementById("submitBtn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    alertBox.innerHTML = "";
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Creating account...";
+    try {
+      await Api.post("/api/register", {
+        fullName: document.getElementById("fullName").value,
+        username: document.getElementById("username").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+      });
+      window.location.href = "/setup.html";
+    } catch (err) {
+      alertBox.innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Continue";
+    }
+  });
+</script>
+</body>
+</html>

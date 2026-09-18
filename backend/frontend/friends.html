@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USM Connect - Friends</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <div class="navbar">
+    <div class="brand"><span class="dot"></span><span class="brand-text">USM Connect</span></div>
+    <nav>
+      <a href="/discover.html" class="navlink">Discover</a>
+      <a href="/matches.html" class="navlink">Matches</a>
+      <a href="/friends.html" class="navlink active">Friends</a>
+      <a href="/messages.html" class="navlink">Messages</a>
+      <a href="/profile.html" class="navlink">Profile</a>
+      <a href="#" class="navlink" id="logoutLink">Log Out</a>
+    </nav>
+  </div>
+
+  <div class="main" style="max-width:640px;">
+    <h1 style="margin-bottom:4px;">Friends</h1>
+    <p class="helper-text">Platonic connections — separate from your romantic matches.</p>
+
+    <div class="section-title">Friend Requests</div>
+    <div id="requestsList"><div class="loader"></div></div>
+
+    <div class="section-title">My Friends</div>
+    <div id="friendsList"><div class="loader"></div></div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  document.getElementById("logoutLink").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await Api.post("/api/logout");
+    window.location.href = "/index.html";
+  });
+
+  function avatarHtml(u) {
+    return u.photoPath
+      ? `<img src="${escapeHtml(u.photoPath)}" alt="${escapeHtml(u.fullName)}">`
+      : escapeHtml(initial(u.fullName));
+  }
+
+  async function loadRequests() {
+    const requests = await Api.get("/api/friends/requests");
+    const el = document.getElementById("requestsList");
+    if (requests.length === 0) {
+      el.innerHTML = `<p class="helper-text">No pending friend requests.</p>`;
+      return;
+    }
+    el.innerHTML = requests.map((r) => `
+      <div class="request-card">
+        <div class="request-avatar">${avatarHtml(r)}</div>
+        <div class="request-info">
+          <h4>${escapeHtml(r.fullName)}</h4>
+          <div class="meta">${escapeHtml(r.course || "")} · ${escapeHtml(r.yearLevel || "")}</div>
+        </div>
+        <div class="request-actions">
+          <button class="btn btn-outline btn-sm" data-decline="${r.requestId}">Decline</button>
+          <button class="btn btn-primary btn-sm" data-accept="${r.requestId}">Accept</button>
+        </div>
+      </div>
+    `).join("");
+
+    el.querySelectorAll("[data-accept]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        await Api.post("/api/friends/respond", { requestId: btn.dataset.accept, accept: true });
+        loadRequests();
+        loadFriends();
+      });
+    });
+    el.querySelectorAll("[data-decline]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        await Api.post("/api/friends/respond", { requestId: btn.dataset.decline, accept: false });
+        loadRequests();
+      });
+    });
+  }
+
+  async function loadFriends() {
+    const friends = await Api.get("/api/friends");
+    const el = document.getElementById("friendsList");
+    if (friends.length === 0) {
+      el.innerHTML = `
+        <div class="empty-state">
+          <span class="big-emoji">🤝</span>
+          <h2>No friends yet</h2>
+          <p>Send a friend request from someone's card on Discover.</p>
+        </div>`;
+      return;
+    }
+    el.innerHTML = friends.map((f) => `
+      <div class="request-card">
+        <div class="request-avatar">${avatarHtml(f)}</div>
+        <div class="request-info">
+          <h4>${escapeHtml(f.fullName)}</h4>
+          <div class="meta">${escapeHtml(f.course || "")} · ${escapeHtml(f.yearLevel || "")}</div>
+        </div>
+        <div class="request-actions">
+          <button class="btn btn-danger btn-sm" data-remove="${f.id}">Remove</button>
+          <a class="btn btn-primary btn-sm" href="/chat.html?with=${encodeURIComponent(f.id)}">💬 Chat</a>
+        </div>
+      </div>
+    `).join("");
+
+    el.querySelectorAll("[data-remove]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        if (!confirm("Remove this friend?")) return;
+        await Api.post("/api/friends/remove", { targetUserId: btn.dataset.remove });
+        loadFriends();
+      });
+    });
+  }
+
+  async function init() {
+    const user = await requireAuth();
+    if (!user) return;
+    await loadRequests();
+    await loadFriends();
+  }
+
+  init();
+</script>
+</body>
+</html>

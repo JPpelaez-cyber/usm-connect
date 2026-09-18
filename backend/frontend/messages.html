@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USM Connect - Messages</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <div class="navbar">
+    <div class="brand"><span class="dot"></span><span class="brand-text">USM Connect</span></div>
+    <nav>
+      <a href="/discover.html" class="navlink">Discover</a>
+      <a href="/matches.html" class="navlink">Matches</a>
+      <a href="/friends.html" class="navlink">Friends</a>
+      <a href="/messages.html" class="navlink active">Messages</a>
+      <a href="/profile.html" class="navlink">Profile</a>
+      <a href="#" class="navlink" id="logoutLink">Log Out</a>
+    </nav>
+  </div>
+
+  <div class="main" style="max-width:560px;">
+    <h1 style="margin-bottom:4px;">Messages</h1>
+    <p class="helper-text">Chat with your matches and friends.</p>
+    <div id="list"><div class="loader"></div></div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  document.getElementById("logoutLink").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await Api.post("/api/logout");
+    window.location.href = "/index.html";
+  });
+
+  async function init() {
+    const user = await requireAuth();
+    if (!user) return;
+    const conversations = await Api.get("/api/chat/conversations");
+    const list = document.getElementById("list");
+
+    if (conversations.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <span class="big-emoji">💬</span>
+          <h2>No conversations yet</h2>
+          <p>Match with someone on Discover or add a friend to start chatting.</p>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = `<div class="conversation-list">${conversations.map(rowHtml).join("")}</div>`;
+  }
+
+  function rowHtml(u) {
+    const avatar = u.photoPath
+      ? `<img src="${escapeHtml(u.photoPath)}" alt="${escapeHtml(u.fullName)}">`
+      : escapeHtml(initial(u.fullName));
+    return `
+      <a class="conversation-row" href="/chat.html?with=${encodeURIComponent(u.id)}">
+        <div class="conversation-avatar">${avatar}</div>
+        <div>
+          <div class="conversation-name">${escapeHtml(u.fullName)}</div>
+          <div class="conversation-meta">${escapeHtml(u.course || "")} · ${escapeHtml(u.yearLevel || "")}</div>
+        </div>
+      </a>`;
+  }
+
+  init();
+</script>
+</body>
+</html>
