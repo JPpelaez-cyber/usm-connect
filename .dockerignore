@@ -1,0 +1,7 @@
+backend/out
+backend/data
+backend/uploads/*
+!backend/uploads/.gitkeep
+.git
+*.log
+sources.txt
